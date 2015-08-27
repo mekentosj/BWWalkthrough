@@ -96,18 +96,21 @@ class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
     @IBInspectable var animateAlpha = false
     
     //	MARK: Properties
-    var delegate: WalkthroughPageDelegate?
     
-    private var subsWeights = [CGPoint]()
+    /// The delegate which allows for comunication back up to the walkthrough view controller.
+    var delegate: WalkthroughPageDelegate?
+    /// Speeds of the animation applied to our subviews, mapped to each subview.
+    private var subviewSpeeds = [CGPoint]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.layer.masksToBounds = true
+        view.layer.masksToBounds = true
         
-        for _ in view.subviews {
-            animationSpeed.x += animationSpeedVariance.x
-            animationSpeed.y += animationSpeedVariance.y
-            subsWeights.append(animationSpeed)
+        //  for each view we increase the animation speed appropriately and store it as a speed for that layer
+        subviewSpeeds = view.subviews.map { _ in
+            self.animationSpeed.x += self.animationSpeedVariance.x
+            self.animationSpeed.y += self.animationSpeedVariance.y
+            return self.animationSpeed
         }
         
     }
@@ -116,7 +119,7 @@ class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
     
     func walkthroughDidScroll(position: CGFloat, offset: CGFloat) {
         
-        for index in 0..<subsWeights.count {
+        for index in 0..<subviewSpeeds.count {
             
             //  perform transition / scale / rotate animations
             switch WalkthroughAnimationType.fromString(animationType) {
@@ -142,22 +145,30 @@ class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
     }
     
     
-    // MARK: Animations (WIP)
+    //  MARK: Animations (WIP)
     
+    /**
+        Animate alpha of subviews based on the current offset of the walkthrough.
+        
+        :param: index       The index of the view to animate.
+        :param  offset      The current offset of the walkthrough.
+     */
     private func animationAlpha(index: Int, var _ offset: CGFloat) {
-        let cView = view.subviews[index] as! UIView
-        
-        if (offset > 1.0){
-            offset = 1.0 + (1.0 - offset)
+        for subview in view.subviews as! [UIView] {
+            
+            //  if the offset is more than 1, we knock it down
+            if (offset > 1.0) {
+                offset = 1.0 + (1.0 - offset)
+            }
+            
+            subview.alpha = (offset)
         }
-        
-        cView.alpha = (offset)
     }
     
-    private func animationCurve(index:Int, _ offset:CGFloat){
+    private func animationCurve(index:Int, _ offset:CGFloat) {
         var transform = CATransform3DIdentity
         var x:CGFloat = (1.0 - offset) * 10
-        transform = CATransform3DTranslate(transform, (pow(x,3) - (x * 25)) * subsWeights[index].x, (pow(x,3) - (x * 20)) * subsWeights[index].y, 0 )
+        transform = CATransform3DTranslate(transform, (pow(x,3) - (x * 25)) * subviewSpeeds[index].x, (pow(x,3) - (x * 20)) * subviewSpeeds[index].y, 0 )
         view.subviews[index].layer.transform = transform
     }
     
@@ -176,7 +187,7 @@ class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
     private func animationLinear(index:Int, _ offset:CGFloat){
         var transform = CATransform3DIdentity
         var mx:CGFloat = (1.0 - offset) * 100
-        transform = CATransform3DTranslate(transform, mx * subsWeights[index].x, mx * subsWeights[index].y, 0 )
+        transform = CATransform3DTranslate(transform, mx * subviewSpeeds[index].x, mx * subviewSpeeds[index].y, 0 )
         view.subviews[index].layer.transform = transform
     }
     
@@ -188,7 +199,7 @@ class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
         if(tmpOffset > 1.0){
             tmpOffset = 1.0 + (1.0 - tmpOffset)
         }
-        transform = CATransform3DTranslate(transform, (1.0 - tmpOffset) * subsWeights[index].x * 100, (1.0 - tmpOffset) * subsWeights[index].y * 100, 0)
+        transform = CATransform3DTranslate(transform, (1.0 - tmpOffset) * subviewSpeeds[index].x * 100, (1.0 - tmpOffset) * subviewSpeeds[index].y * 100, 0)
         view.subviews[index].layer.transform = transform
         
     }
