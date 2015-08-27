@@ -84,53 +84,59 @@ enum WalkthroughAnimationType {
 */
 class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
     
-    @IBInspectable var speed = CGPoint(x: 0.0, y: 0.0);            // Note if you set this value via Attribute inspector it can only be an Integer (change it manually via User defined runtime attribute if you need a Float)
-    @IBInspectable var speedVariance = CGPoint(x: 0.0, y: 0.0)     // Note if you set this value via Attribute inspector it can only be an Integer (change it manually via User defined runtime attribute if you need a Float)
-    @IBInspectable var animationType = "Linear"                     //
-    @IBInspectable var animateAlpha = false                           //
+    //	MARK: Properties - Animation
     
+    ///  The speed of the animation.
+    @IBInspectable var animationSpeed = CGPoint(x: 0.0, y: 0.0);
+    /// The variance in speed of the animation.
+    @IBInspectable var animationSpeedVariance = CGPoint(x: 0.0, y: 0.0)
+    /// The type of the animation.
+    @IBInspectable var animationType = "Linear"
+    /// Whether or not to animate the alpha value of the page.
+    @IBInspectable var animateAlpha = false
+    
+    //	MARK: Properties
     var delegate: WalkthroughPageDelegate?
     
-    private var subsWeights:[CGPoint] = Array()
+    private var subsWeights = [CGPoint]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.layer.masksToBounds = true
-        subsWeights = Array()
         
         for v in view.subviews{
-            speed.x += speedVariance.x
-            speed.y += speedVariance.y
-            subsWeights.append(speed)
+            animationSpeed.x += animationSpeedVariance.x
+            animationSpeed.y += animationSpeedVariance.y
+            subsWeights.append(animationSpeed)
         }
         
     }
     
-    // MARK: BWWalkthroughPage Implementation
+    // MARK: BWWalkthroughPage Functions
     
     func walkthroughDidScroll(position: CGFloat, offset: CGFloat) {
         
-        for(var i = 0; i < subsWeights.count ;i++){
+        for index in 0..<subsWeights.count {
             
-            // Perform Transition/Scale/Rotate animations
-            switch WalkthroughAnimationType.fromString(animationType){
+            //  perform transition / scale / rotate animations
+            switch WalkthroughAnimationType.fromString(animationType) {
                 
             case WalkthroughAnimationType.Linear:
-                animationLinear(i, offset)
+                animationLinear(index, offset)
                 
             case WalkthroughAnimationType.Zoom:
-                animationZoom(i, offset)
+                animationZoom(index, offset)
                 
             case WalkthroughAnimationType.Curve:
-                animationCurve(i, offset)
+                animationCurve(index, offset)
                 
             case WalkthroughAnimationType.InOut:
-                animationInOut(i, offset)
+                animationInOut(index, offset)
             }
             
-            // Animate alpha
-            if(animateAlpha){
-                animationAlpha(i, offset)
+            //  animate alpha
+            if(animateAlpha) {
+                animationAlpha(index, offset)
             }
         }
     }
@@ -138,7 +144,7 @@ class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
     
     // MARK: Animations (WIP)
     
-    private func animationAlpha(index:Int, var _ offset:CGFloat){
+    private func animationAlpha(index:Int, var _ offset:CGFloat) {
         let cView = view.subviews[index] as! UIView
         
         if(offset > 1.0){
