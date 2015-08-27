@@ -229,17 +229,6 @@ import UIKit
             prevButton?.hidden = false
         }
         
-        if let currentPage = controllers[currentPage] as? BWWalkthroughPage {
-            switch currentPage.pageControlPreference {
-            case .Default:
-                closeButton?.hidden = false
-            case .HideCloseButton:
-                closeButton?.hidden = true
-            case .ShowCloseButton:
-                closeButton?.hidden = false
-            }
-        }
-        
         if let finalTitle = finalCloseButtonTitle {
             
             if standardCloseButtonTitle == nil {
