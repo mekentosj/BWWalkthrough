@@ -64,12 +64,6 @@ class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
     
     var delegate: WalkthroughPageDelegate?
     
-    /** Inspectable enums are not a thing yet, so for not we use an Int hack.   */
-    @IBInspectable var pageControlPreference: WalkthroughPageControlPreference {
-        return WalkthroughPageControlPreference(rawValue: pageControlPreferenceInt)!
-    }
-    @IBInspectable var pageControlPreferenceInt: Int = 0
-    
     private var subsWeights:[CGPoint] = Array()
     
     override func viewDidLoad() {

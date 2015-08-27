@@ -27,16 +27,28 @@ import UIKit
     
 }
 
+//  MARK: Walkthrough Page Delegate
+
+/**
+    A delegate which allows a walkthrough page to communicate back up to the main walkthrough view controller.
+
+    The delegate is marked as @objc to allow Objective-C classes to conform to it.
+*/
+@objc protocol WalkthroughPageDelegate {
+    /**
+        This function is called on the delegate when a page would like to dismiss the entire walkthrough.
+        
+        :param: walkthroughPage     The page requesting that the walkthrough be dismissed.
+    */
+    func walkthroughPageRequestsDismissal(walkthroughPage: BWWalkthroughPage)
+}
+
 //  MARK: BWWalkthroughPage Protocol
 
 /**
     The walkthrough page represents any page added to the Walkthrough.
     At the moment it's only used to perform custom animations on didScroll.
  */
-
-@objc enum WalkthroughPageControlPreference: Int {
-    case Default, ShowCloseButton, HideCloseButton
-}
 
 @objc protocol BWWalkthroughPage {
     
@@ -50,5 +62,4 @@ import UIKit
     @objc func walkthroughDidScroll(position:CGFloat, offset:CGFloat)   // Called when the main Scrollview...scrolls
     
     var delegate: WalkthroughPageDelegate? { get set }
-    var pageControlPreference: WalkthroughPageControlPreference { get }
 }

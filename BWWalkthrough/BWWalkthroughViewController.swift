@@ -302,10 +302,6 @@ extension BWWalkthroughViewController: UIScrollViewDelegate {
 }
 
 extension BWWalkthroughViewController: WalkthroughPageDelegate {
-    func walkthroughPageRequestPageControlPreferenceRefresh(walkthroughPage: BWWalkthroughPage) {
-        updateButtons()
-    }
-    
     func walkthroughPageRequestsDismissal(walkthroughPage: BWWalkthroughPage) {
         close(self)
     }
