@@ -28,24 +28,41 @@ SOFTWARE.
 
 import UIKit
 
-enum WalkthroughAnimationType{
+/// The type of animation the walkthrough page is performing.
+enum WalkthroughAnimationType {
+    /// A standard, linear animation
     case Linear
+    /// A curved animation
     case Curve
+    /// A zoom animation
     case Zoom
+    /// An in out animation.
     case InOut
     
-    static func fromString(str:String)->WalkthroughAnimationType{
-        switch(str){
-        case "Linear":
+    /**
+        Allows for initialisation of a `WalkthroughAnimationType` from a `String`. Supported strings (case insensitive):
+        
+        - "Linear"
+        - "Curve"
+        - "Zoom"
+        - "InOut"
+    
+        :param: string      A string describing the desired animation type.
+        
+        :returns:           A `WalkthroughAnimationType` matching the given string, or just a `Linear` animation if the string is unsupported.
+     */
+    static func fromString(string: String) -> WalkthroughAnimationType {
+        switch(string.lowercaseString) {
+        case "linear":
             return .Linear
             
-        case "Curve":
+        case "curve":
             return .Curve
             
-        case "Zoom":
+        case "zoom":
             return .Zoom
             
-        case "InOut":
+        case "inout":
             return .InOut
             
         default:
