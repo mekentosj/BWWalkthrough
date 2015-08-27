@@ -1,21 +1,21 @@
 /*
-The MIT License (MIT)
-Copyright (c) 2015 Yari D'areglia @bitwaker
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+    The MIT License (MIT)
+    Copyright (c) 2015 Yari D'areglia @bitwaker
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
 */
 
 import UIKit
@@ -66,6 +66,80 @@ import UIKit
         return scrollView
     }()
     
+    //	MARK: Actions
+    
+    @IBAction private func nextPage() {
+        
+        if (currentPage + 1) < controllers.count {
+            
+            delegate?.walkthroughNextButtonPressed?()
+            
+            var frame = scrollView.frame
+            frame.origin.x = CGFloat(currentPage + 1) * frame.size.width
+            scrollView.scrollRectToVisible(frame, animated: true)
+        }
+    }
+    
+    @IBAction private func prevPage() {
+        
+        if currentPage > 0 {
+            
+            delegate?.walkthroughPrevButtonPressed?()
+            
+            var frame = scrollView.frame
+            frame.origin.x = CGFloat(currentPage - 1) * frame.size.width
+            scrollView.scrollRectToVisible(frame, animated: true)
+        }
+    }
+    
+    @IBAction private func close(sender: AnyObject){
+        delegate?.walkthroughCloseButtonPressed?()
+    }
+    
+    //	MARK: UI Updating Functions
+    
+    /**
+        Update the UI to reflect the current walkthrough situation.
+    **/
+    
+    private func updateUI(){
+        
+        //  get the current page
+        
+        pageControl?.currentPage = currentPage
+        
+        //  notify delegate about the new page
+        
+        delegate?.walkthroughPageDidChange?(currentPage)
+        
+        //  hide / show navigation buttons
+        
+        updateButtons()
+    }
+    
+    /**
+        Updates navigation and control buttons (next / previous / close)
+    */
+    private func updateButtons() {
+        
+        //  hides next button if we are on the last page, and previous button if we are ont he first page
+        nextButton?.hidden = currentPage == controllers.count - 1
+        prevButton?.hidden = currentPage == 0
+        
+        //  if we have a title for the close button to be shown on the last page, we check and act appropriately
+        if let finalTitle = finalCloseButtonTitle {
+            
+            //  remember the close button title for all pages other than the last page
+            if standardCloseButtonTitle == nil {
+                standardCloseButtonTitle = closeButton?.titleLabel?.text
+            }
+            
+            //  set title for close button based on whether we are on the last page or not
+            let title = currentPage == controllers.count - 1 ? finalTitle : standardCloseButtonTitle
+            closeButton?.setTitle(title, forState: .Normal)
+        }
+    }
+    
     //	MARK: View Lifecycle
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
@@ -95,36 +169,6 @@ import UIKit
         pageControl?.currentPage = 0
         
         updateButtons()
-    }
-    
-    //	MARK: Actions
-    
-    @IBAction private func nextPage() {
-        
-        if (currentPage + 1) < controllers.count {
-            
-            delegate?.walkthroughNextButtonPressed?()
-            
-            var frame = scrollView.frame
-            frame.origin.x = CGFloat(currentPage + 1) * frame.size.width
-            scrollView.scrollRectToVisible(frame, animated: true)
-        }
-    }
-    
-    @IBAction private func prevPage() {
-        
-        if currentPage > 0 {
-            
-            delegate?.walkthroughPrevButtonPressed?()
-            
-            var frame = scrollView.frame
-            frame.origin.x = CGFloat(currentPage - 1) * frame.size.width
-            scrollView.scrollRectToVisible(frame, animated: true)
-        }
-    }
-    
-    @IBAction private func close(sender: AnyObject){
-        delegate?.walkthroughCloseButtonPressed?()
     }
     
     //	MARK: Walkthrough Page Management
@@ -194,54 +238,12 @@ import UIKit
         
         updateViewControllers()
     }
-    
-    /**
-        Update the UI to reflect the current walkthrough situation.
-    **/
-    
-    private func updateUI(){
-        
-        //  get the current page
-        
-        pageControl?.currentPage = currentPage
-        
-        //  notify delegate about the new page
-        
-        delegate?.walkthroughPageDidChange?(currentPage)
-        
-        //  hide / show navigation buttons
-        
-        updateButtons()
-    }
-    
-    /**
-        Updates navigation and control buttons (next / previous / close)
-    */
-    private func updateButtons() {
-        
-        nextButton?.hidden = currentPage == controllers.count - 1
-        
-        if currentPage == 0 {
-            prevButton?.hidden = true
-        } else {
-            prevButton?.hidden = false
-        }
-        
-        if let finalTitle = finalCloseButtonTitle {
-            
-            if standardCloseButtonTitle == nil {
-                standardCloseButtonTitle = closeButton?.titleLabel?.text
-            }
-            
-            let title = currentPage == controllers.count - 1 ? finalTitle : standardCloseButtonTitle
-            closeButton?.setTitle(title, forState: .Normal)
-        }
-    }
 }
 
-//  MARK: UIScrollViewDelegate Methods
+//  MARK: UIScrollViewDelegate Functions
 extension BWWalkthroughViewController: UIScrollViewDelegate {
-    func scrollViewDidScroll(sv: UIScrollView) {
+    
+    func scrollViewDidScroll(scrollView: UIScrollView) {
         
         for var i=0; i < controllers.count; i++ {
             
@@ -249,15 +251,12 @@ extension BWWalkthroughViewController: UIScrollViewDelegate {
                 
                 let mx = ((scrollView.contentOffset.x + view.bounds.size.width) - (view.bounds.size.width * CGFloat(i))) / view.bounds.size.width
                 
-                // While sliding to the "next" slide (from right to left), the "current" slide changes its offset from 1.0 to 2.0 while the "next" slide changes it from 0.0 to 1.0
-                // While sliding to the "previous" slide (left to right), the current slide changes its offset from 1.0 to 0.0 while the "previous" slide changes it from 2.0 to 1.0
-                // The other pages update their offsets whith values like 2.0, 3.0, -2.0... depending on their positions and on the status of the walkthrough
-                // This value can be used on the previous, current and next page to perform custom animations on page's subviews.
+                //  while sliding to the "next" slide (from right to left), the "current" slide changes its offset from 1.0 to 2.0 while the "next" slide changes it from 0.0 to 1.0
+                //  while sliding to the "previous" slide (left to right), the current slide changes its offset from 1.0 to 0.0 while the "previous" slide changes it from 2.0 to 1.0
+                //  the other pages update their offsets whith values like 2.0, 3.0, -2.0... depending on their positions and on the status of the walkthrough
+                //  this value can be used on the previous, current and next page to perform custom animations on page's subviews.
                 
-                // print the mx value to get more info.
-                // println("\(i):\(mx)")
-                
-                // We animate only the previous, current and next page
+                //  we animate only the previous, current and next page
                 if(mx < 2 && mx > -2.0){
                     vc.walkthroughDidScroll(scrollView.contentOffset.x, offset: mx)
                 }
@@ -274,13 +273,19 @@ extension BWWalkthroughViewController: UIScrollViewDelegate {
     }
 }
 
+//	MARK: WalkthroughPageDelegate Functions
 extension BWWalkthroughViewController: WalkthroughPageDelegate {
     func walkthroughPageRequestsDismissal(walkthroughPage: BWWalkthroughPage) {
         close(self)
     }
 }
 
+//	MARK: UIView - Convenience Extension
 extension UIView {
+    
+    /**
+        Removes only constraints pertaining to the width or height of this view.
+     */
     func removeHeightWidthConstraints() {
         for constraint in constraints() as! [NSLayoutConstraint] {
             if constraint.firstAttribute == .Width || constraint.secondAttribute == .Width ||
