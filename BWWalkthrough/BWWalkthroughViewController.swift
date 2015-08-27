@@ -21,7 +21,7 @@
 import UIKit
 
 //  MARK: Walkthrough View Controller
-@objc class BWWalkthroughViewController: UIViewController {
+class BWWalkthroughViewController: UIViewController {
     
     //  MARK: Properties - State
     
