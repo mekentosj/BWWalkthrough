@@ -104,7 +104,7 @@ class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
         super.viewDidLoad()
         self.view.layer.masksToBounds = true
         
-        for v in view.subviews{
+        for _ in view.subviews {
             animationSpeed.x += animationSpeedVariance.x
             animationSpeed.y += animationSpeedVariance.y
             subsWeights.append(animationSpeed)
@@ -144,12 +144,13 @@ class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
     
     // MARK: Animations (WIP)
     
-    private func animationAlpha(index:Int, var _ offset:CGFloat) {
+    private func animationAlpha(index: Int, var _ offset: CGFloat) {
         let cView = view.subviews[index] as! UIView
         
-        if(offset > 1.0){
+        if (offset > 1.0){
             offset = 1.0 + (1.0 - offset)
         }
+        
         cView.alpha = (offset)
     }
     
