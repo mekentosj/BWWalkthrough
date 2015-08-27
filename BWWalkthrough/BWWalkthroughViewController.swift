@@ -70,6 +70,7 @@ import UIKit
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         
+        //  this needs to happen in viewDidAppear because otherwise the constraints will be incorrect
         updateViewControllers()
     }
     
@@ -96,8 +97,7 @@ import UIKit
         updateButtons()
     }
     
-    
-    // MARK: - Internal methods -
+    //	MARK: Actions
     
     @IBAction private func nextPage() {
         
@@ -127,6 +127,11 @@ import UIKit
         delegate?.walkthroughCloseButtonPressed?()
     }
     
+    //	MARK: Walkthrough Page Management
+    
+    /**
+        Updates the scroll view with the current view controllers to be displayed.
+     */
     private func updateViewControllers() {
         
         if scrollView.bounds == CGRect.zeroRect {
@@ -179,46 +184,42 @@ import UIKit
     }
     
     /**
-    addViewController
-    Add a new page to the walkthrough.
-    To have information about the current position of the page in the walkthrough add a UIVIewController which implements BWWalkthroughPage
+        Adds a new page to the walkthrough.
+    
+        :param: viewController      A view controller which manages a view to be added as a page to the walkthrough.
     */
-    func addViewController(vc:UIViewController)->Void{
+    func addViewController(viewController: UIViewController) {
         
-        controllers.append(vc)
+        controllers.append(viewController)
         
         updateViewControllers()
     }
     
     /**
-    Update the UI to reflect the current walkthrough situation
+        Update the UI to reflect the current walkthrough situation.
     **/
     
     private func updateUI(){
         
-        // Get the current page
+        //  get the current page
         
         pageControl?.currentPage = currentPage
         
-        // Notify delegate about the new page
+        //  notify delegate about the new page
         
         delegate?.walkthroughPageDidChange?(currentPage)
         
-        // Hide/Show navigation buttons
+        //  hide / show navigation buttons
         
         updateButtons()
     }
     
     /**
-    Updates previous and next buttons.
+        Updates navigation and control buttons (next / previous / close)
     */
     private func updateButtons() {
         
-        if currentPage == controllers.count - 1 {
-            nextButton?.hidden = true
-        } else {
-            nextButton?.hidden = false
-        }
+        nextButton?.hidden = currentPage == controllers.count - 1
         
         if currentPage == 0 {
             prevButton?.hidden = true
