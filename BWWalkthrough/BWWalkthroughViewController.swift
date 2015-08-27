@@ -32,67 +32,64 @@ import UIKit
             return page
         }
     }
-    /** Object interested in updates to the walkthrough, such as switching pages, or closing it.    */
+    /// Object interested in updates to the walkthrough, such as switching pages, or closing it.
     weak var delegate: BWWalkthroughViewControllerDelegate?
-    /** Title for 'close' button when the end of the walkthrough has been reached.  */
+    /// Title for 'close' button when the end of the walkthrough has been reached.
     var finalCloseButtonTitle: String?
-    /** The close button title pulled from the storyboard.  */
+    /// The close button title pulled from the storyboard.
     private var standardCloseButtonTitle: String?
+    /// The view controllers for the views in our scroll view.
     private var controllers = [UIViewController]()
+    /// The last horizontal layout constraint for the last view in the scroll view to the right edge of the scroll view
     private var lastViewConstraint:NSArray?
     
     //  MARK: Properties - Subviews
     
-    @IBOutlet var closeButton:UIButton?
+    /// The button that allows for closing the walkthough.
+    @IBOutlet var closeButton: UIButton?
+    /// A control that shows the user which page they are on relative to the other pages / total number of pages
     @IBOutlet var pageControl:UIPageControl?
+    /// A button that navigates the scroll view back to the previous page.
     @IBOutlet var prevButton:UIButton?
+    /// A button that navigates the scroll view to the next page.
     @IBOutlet var nextButton:UIButton?
-    
-    /** A scroll view containing the walkthrough pages. */
-    let scrollView = UIScrollView()
-    
-    
-    //  MARK: Initialisation
-    
-    required init(coder aDecoder: NSCoder) {
+    /// A scroll view containing the walkthrough pages.
+    let scrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        
+        scrollView.setTranslatesAutoresizingMaskIntoConstraints(false)
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.showsVerticalScrollIndicator = false
         scrollView.pagingEnabled = true
         scrollView.keyboardDismissMode = .OnDrag
         
-        super.init(coder: aDecoder)
-    }
+        return scrollView
+    }()
     
-    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
-        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        // Initialize UIScrollView
-        
-        scrollView.delegate = self
-        scrollView.setTranslatesAutoresizingMaskIntoConstraints(false)
-        
-        view.insertSubview(scrollView, atIndex: 0) //scrollView is inserted as first view of the hierarchy
-        
-        // Set scrollView related constraints
-        
-        view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-0-[scrollView]-0-|", options:nil, metrics: nil, views: ["scrollView":scrollView]))
-        view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-0-[scrollView]-0-|", options:nil, metrics: nil, views: ["scrollView":scrollView]))
-        
-    }
-    
+    //	MARK: View Lifecycle
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         
         updateViewControllers()
     }
     
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        //  inset the scroll view as the first view in the hierarchy
+        view.insertSubview(scrollView, atIndex: 0)
+        
+        //  set up the scroll view to cover the entirety of the main view
+        view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|[scrollView]|", options:nil, metrics: nil, views: ["scrollView": scrollView]))
+        view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|[scrollView]|", options:nil, metrics: nil, views: ["scrollView": scrollView]))
+    }
+    
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated);
         
+        scrollView.delegate = self
+        
+        //  configure page control
         pageControl?.numberOfPages = controllers.count
         pageControl?.currentPage = 0
         
@@ -238,20 +235,6 @@ import UIKit
             let title = currentPage == controllers.count - 1 ? finalTitle : standardCloseButtonTitle
             closeButton?.setTitle(title, forState: .Normal)
         }
-    }
-    
-    // MARK: - Scrollview Delegate -
-    
-    
-    
-    
-    /* WIP */
-    override func willTransitionToTraitCollection(newCollection: UITraitCollection, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
-        println("CHANGE")
-    }
-    
-    override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
-        println("SIZE")
     }
 }
 
