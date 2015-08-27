@@ -71,13 +71,23 @@ enum WalkthroughAnimationType {
     }
 }
 
+//	MARK: Walkthrough Page View Controller Class
+
+/**
+    **BWWalkthroughPageViewController**
+
+    This is a `UIViewController` which adopts the `BWWalkthroughPage` protocol and allows for a default implementation of page behaviour
+    for use in the `BWWalkthroughViewController`.
+
+    Unless you have a specific reason not to, you should subclass this view controller if you want it to be a part of the `BWWalkthroughViewController`.
+    If you do have a specific reason, feel free to simply adopt the `BWWalkthroughPage` protocol.
+*/
 class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
     
-    // Edit these values using the Attribute inspector or modify directly the "User defined runtime attributes" in IB
-    @IBInspectable var speed:CGPoint = CGPoint(x: 0.0, y: 0.0);            // Note if you set this value via Attribute inspector it can only be an Integer (change it manually via User defined runtime attribute if you need a Float)
-    @IBInspectable var speedVariance:CGPoint = CGPoint(x: 0.0, y: 0.0)     // Note if you set this value via Attribute inspector it can only be an Integer (change it manually via User defined runtime attribute if you need a Float)
-    @IBInspectable var animationType:String = "Linear"                     //
-    @IBInspectable var animateAlpha:Bool = false                           //
+    @IBInspectable var speed = CGPoint(x: 0.0, y: 0.0);            // Note if you set this value via Attribute inspector it can only be an Integer (change it manually via User defined runtime attribute if you need a Float)
+    @IBInspectable var speedVariance = CGPoint(x: 0.0, y: 0.0)     // Note if you set this value via Attribute inspector it can only be an Integer (change it manually via User defined runtime attribute if you need a Float)
+    @IBInspectable var animationType = "Linear"                     //
+    @IBInspectable var animateAlpha = false                           //
     
     var delegate: WalkthroughPageDelegate?
     
