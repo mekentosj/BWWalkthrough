@@ -1,18 +1,14 @@
 /*
 The MIT License (MIT)
-
 Copyright (c) 2015 Yari D'areglia @bitwaker
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,133 +18,177 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+//
+//  BWWalkthroughPageViewController.swift
+//  BWWalkthrough
+//
+//  Created by Yari D'areglia on 17/09/14.
+//  Copyright (c) 2014 Yari D'areglia. All rights reserved.
+//
 
 import UIKit
 
-enum WalkthroughAnimationType:String{
-    case Linear = "Linear"
-    case Curve = "Curve"
-    case Zoom = "Zoom"
-    case InOut = "InOut"
+/// The type of animation the walkthrough page is performing.
+enum WalkthroughAnimationType {
+    /// A standard, linear animation
+    case Linear
+    /// A curved animation
+    case Curve
+    /// A zoom animation
+    case Zoom
+    /// An in out animation.
+    case InOut
     
-    init(_ name:String){
+    /**
+        Allows for initialisation of a `WalkthroughAnimationType` from a `String`. Supported strings (case insensitive):
         
-        if let tempSelf = WalkthroughAnimationType(rawValue: name){
-            self = tempSelf
-        }else{
-            self = .Linear
+        - "Linear"
+        - "Curve"
+        - "Zoom"
+        - "InOut"
+    
+        :param: string      A string describing the desired animation type.
+        
+        :returns:           A `WalkthroughAnimationType` matching the given string, or just a `Linear` animation if the string is unsupported.
+     */
+    static func fromString(string: String) -> WalkthroughAnimationType {
+        switch(string.lowercaseString) {
+        case "linear":
+            return .Linear
+            
+        case "curve":
+            return .Curve
+            
+        case "zoom":
+            return .Zoom
+            
+        case "inout":
+            return .InOut
+            
+        default:
+            return .Linear
         }
     }
 }
 
+//	MARK: Walkthrough Page View Controller Class
+
+/**
+    **BWWalkthroughPageViewController**
+
+    This is a `UIViewController` which adopts the `BWWalkthroughPage` protocol and allows for a default implementation of page behaviour
+    for use in the `BWWalkthroughViewController`.
+
+    Unless you have a specific reason not to, you should subclass this view controller if you want it to be a part of the `BWWalkthroughViewController`.
+    If you do have a specific reason, feel free to simply adopt the `BWWalkthroughPage` protocol.
+*/
 class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
     
-    private var animation:WalkthroughAnimationType = .Linear
-    private var subsWeights:[CGPoint] = Array()
-    private var notAnimatableViews:[Int] = [] // Array of views' tags that should not be animated during the scroll/transition
+    //	MARK: Properties - Animation
     
-    // MARK: Inspectable Properties
-    // Edit these values using the Attribute inspector or modify directly the "User defined runtime attributes" in IB
-    @IBInspectable var speed:CGPoint = CGPoint(x: 0.0, y: 0.0);            // Note if you set this value via Attribute inspector it can only be an Integer (change it manually via User defined runtime attribute if you need a Float)
-    @IBInspectable var speedVariance:CGPoint = CGPoint(x: 0.0, y: 0.0)     // Note if you set this value via Attribute inspector it can only be an Integer (change it manually via User defined runtime attribute if you need a Float)
-    @IBInspectable var animationType:String {
-        set(value){
-            self.animation = WalkthroughAnimationType(rawValue: value)!
-        }
-        get{
-            return self.animation.rawValue
-        }
-    }
-    @IBInspectable var animateAlpha:Bool = false
-    @IBInspectable var staticTags:String {                                 // A comma separated list of tags that you don't want to animate during the transition/scroll 
-        set(value){
-            self.notAnimatableViews = map(split(value){$0 == ","}){String($0).toInt()!}
-        }
-        get{
-            return ",".join(map(notAnimatableViews){String($0)})
-        }
-    }
+    ///  The speed of the animation.
+    @IBInspectable var animationSpeed = CGPoint(x: 0.0, y: 0.0);
+    /// The variance in speed of the animation.
+    @IBInspectable var animationSpeedVariance = CGPoint(x: 0.0, y: 0.0)
+    /// The type of the animation.
+    @IBInspectable var animationType = "Linear"
+    /// Whether or not to animate the alpha value of the page.
+    @IBInspectable var animateAlpha = false
     
-    // MARK: BWWalkthroughPage Implementation
-
+    //	MARK: Properties
+    
+    /// The delegate which allows for comunication back up to the walkthrough view controller.
+    var delegate: WalkthroughPageDelegate?
+    /// Speeds of the animation applied to our subviews, mapped to each subview.
+    private var subviewSpeeds = [CGPoint]()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.layer.masksToBounds = true
-        subsWeights = Array()
+        view.layer.masksToBounds = true
         
-        for v in view.subviews{
-            speed.x += speedVariance.x
-            speed.y += speedVariance.y
-            if !contains(notAnimatableViews, v.tag){
-                subsWeights.append(speed)
-            }
+        //  for each view we increase the animation speed appropriately and store it as a speed for that layer
+        subviewSpeeds = view.subviews.map { _ in
+            self.animationSpeed.x += self.animationSpeedVariance.x
+            self.animationSpeed.y += self.animationSpeedVariance.y
+            return self.animationSpeed
         }
         
     }
+    
+    // MARK: BWWalkthroughPage Functions
     
     func walkthroughDidScroll(position: CGFloat, offset: CGFloat) {
         
-        for(var i = 0; i < subsWeights.count ;i++){
+        for index in 0..<subviewSpeeds.count {
             
-            // Perform Transition/Scale/Rotate animations
-            switch animation{
+            //  perform transition / scale / rotate animations
+            switch WalkthroughAnimationType.fromString(animationType) {
                 
-            case .Linear:
-                animationLinear(i, offset)
+            case WalkthroughAnimationType.Linear:
+                animationLinear(index, offset)
                 
-            case .Zoom:
-                animationZoom(i, offset)
+            case WalkthroughAnimationType.Zoom:
+                animationZoom(index, offset)
                 
-            case .Curve:
-                animationCurve(i, offset)
+            case WalkthroughAnimationType.Curve:
+                animationCurve(index, offset)
                 
-            case .InOut:
-                animationInOut(i, offset)
+            case WalkthroughAnimationType.InOut:
+                animationInOut(index, offset)
             }
             
-            // Animate alpha
-            if(animateAlpha){
-                animationAlpha(i, offset)
+            //  animate alpha
+            if(animateAlpha) {
+                animationAlpha(index, offset)
             }
         }
     }
-
     
-    // MARK: Animations (WIP)
     
-    private func animationAlpha(index:Int, var _ offset:CGFloat){
-        let cView = view.subviews[index] as! UIView
+    //  MARK: Animations (WIP)
+    
+    /**
+        Animate alpha of subviews based on the current offset of the walkthrough.
         
-        if(offset > 1.0){
-            offset = 1.0 + (1.0 - offset)
+        :param: index       The index of the view to animate.
+        :param  offset      The current offset of the walkthrough.
+     */
+    private func animationAlpha(index: Int, var _ offset: CGFloat) {
+        for subview in view.subviews as! [UIView] {
+            
+            //  if the offset is more than 1, we knock it down
+            if (offset > 1.0) {
+                offset = 1.0 + (1.0 - offset)
+            }
+            
+            subview.alpha = (offset)
         }
-        cView.alpha = (offset)
     }
     
-    private func animationCurve(index:Int, _ offset:CGFloat){
+    private func animationCurve(index:Int, _ offset:CGFloat) {
         var transform = CATransform3DIdentity
         var x:CGFloat = (1.0 - offset) * 10
-        transform = CATransform3DTranslate(transform, (pow(x,3) - (x * 25)) * subsWeights[index].x, (pow(x,3) - (x * 20)) * subsWeights[index].y, 0 )
-        applyTransform(index, transform: transform)
+        transform = CATransform3DTranslate(transform, (pow(x,3) - (x * 25)) * subviewSpeeds[index].x, (pow(x,3) - (x * 20)) * subviewSpeeds[index].y, 0 )
+        view.subviews[index].layer.transform = transform
     }
     
     private func animationZoom(index:Int, _ offset:CGFloat){
         var transform = CATransform3DIdentity
-
+        
         var tmpOffset = offset
         if(tmpOffset > 1.0){
             tmpOffset = 1.0 + (1.0 - tmpOffset)
         }
         var scale:CGFloat = (1.0 - tmpOffset)
         transform = CATransform3DScale(transform, 1 - scale , 1 - scale, 1.0)
-        applyTransform(index, transform: transform)
+        view.subviews[index].layer.transform = transform
     }
     
     private func animationLinear(index:Int, _ offset:CGFloat){
         var transform = CATransform3DIdentity
         var mx:CGFloat = (1.0 - offset) * 100
-        transform = CATransform3DTranslate(transform, mx * subsWeights[index].x, mx * subsWeights[index].y, 0 )
-        applyTransform(index, transform: transform)
+        transform = CATransform3DTranslate(transform, mx * subviewSpeeds[index].x, mx * subviewSpeeds[index].y, 0 )
+        view.subviews[index].layer.transform = transform
     }
     
     private func animationInOut(index:Int, _ offset:CGFloat){
@@ -159,16 +199,9 @@ class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
         if(tmpOffset > 1.0){
             tmpOffset = 1.0 + (1.0 - tmpOffset)
         }
-        transform = CATransform3DTranslate(transform, (1.0 - tmpOffset) * subsWeights[index].x * 100, (1.0 - tmpOffset) * subsWeights[index].y * 100, 0)
-        applyTransform(index, transform: transform)
-    }
-    
-    private func applyTransform(index:Int, transform:CATransform3D){
-        if let subview = view.subviews[index] as? UIView{
-            if !contains(notAnimatableViews, subview.tag){
-                view.subviews[index].layer.transform = transform
-            }
-        }
+        transform = CATransform3DTranslate(transform, (1.0 - tmpOffset) * subviewSpeeds[index].x * 100, (1.0 - tmpOffset) * subviewSpeeds[index].y * 100, 0)
+        view.subviews[index].layer.transform = transform
+        
     }
     
 }
