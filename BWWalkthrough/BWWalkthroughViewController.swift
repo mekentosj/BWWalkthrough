@@ -41,7 +41,7 @@ class BWWalkthroughViewController: UIViewController {
     /// The view controllers for the views in our scroll view.
     private var controllers = [UIViewController]()
     /// The last horizontal layout constraint for the last view in the scroll view to the right edge of the scroll view
-    private var lastViewConstraint:NSArray?
+    private var lastViewConstraints: [NSLayoutConstraint]?
     
     //  MARK: Properties - Subviews
     
@@ -57,7 +57,7 @@ class BWWalkthroughViewController: UIViewController {
     let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         
-        scrollView.setTranslatesAutoresizingMaskIntoConstraints(false)
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.showsVerticalScrollIndicator = false
         scrollView.pagingEnabled = true
@@ -155,8 +155,8 @@ class BWWalkthroughViewController: UIViewController {
         view.insertSubview(scrollView, atIndex: 0)
         
         //  set up the scroll view to cover the entirety of the main view
-        view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|[scrollView]|", options:nil, metrics: nil, views: ["scrollView": scrollView]))
-        view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|[scrollView]|", options:nil, metrics: nil, views: ["scrollView": scrollView]))
+        view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|[scrollView]|", options: [], metrics: nil, views: ["scrollView": scrollView]))
+        view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|[scrollView]|", options: [], metrics: nil, views: ["scrollView": scrollView]))
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -178,12 +178,12 @@ class BWWalkthroughViewController: UIViewController {
      */
     private func updateViewControllers() {
         
-        if scrollView.bounds == CGRect.zeroRect {
+        if scrollView.bounds == CGRect.zero {
             return
         }
         
-        scrollView.removeConstraints(scrollView.constraints())
-        (scrollView.subviews as! [UIView]).map { $0.removeFromSuperview() }
+        scrollView.removeConstraints(scrollView.constraints)
+        scrollView.subviews.forEach { $0.removeFromSuperview() }
         
         let metrics = ["w": scrollView.bounds.width, "h": scrollView.bounds.height]
         
@@ -191,36 +191,36 @@ class BWWalkthroughViewController: UIViewController {
             let viewController = controllers[viewControllerIndex]
             let view = viewController.view
             
-            view.setTranslatesAutoresizingMaskIntoConstraints(false)
+            view.translatesAutoresizingMaskIntoConstraints = false
             view.removeHeightWidthConstraints()
             scrollView.addSubview(view)
             
             let viewsDictionary = ["view": view]
             
             //  define height and width
-            view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[view(h)]", options:nil, metrics: metrics, views: viewsDictionary))
-            view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:[view(w)]", options:nil, metrics: metrics, views: viewsDictionary))
+            view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[view(h)]", options: [], metrics: metrics, views: viewsDictionary))
+            view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:[view(w)]", options: [], metrics: metrics, views: viewsDictionary))
             
             //  define scroll view content size vertically
-            scrollView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|[view]|", options:nil, metrics: nil, views: viewsDictionary))
+            scrollView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|[view]|", options: [], metrics: nil, views: viewsDictionary))
             
             //  position first view at beginning of scroll view
             if viewControllerIndex == 0 {
-                scrollView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|[view]", options:nil, metrics: nil, views: viewsDictionary))
+                scrollView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|[view]", options: [], metrics: nil, views: viewsDictionary))
             } else {
                 //  position subsequent views after the previous view
                 let previousViewController = controllers[viewControllerIndex - 1]
                 let previousView = previousViewController.view
                 
-                scrollView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:[previousView][view]", options:nil, metrics: nil, views: ["previousView": previousView, "view": view]))
+                scrollView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:[previousView][view]", options: [], metrics: nil, views: ["previousView": previousView, "view": view]))
                 
                 //  if we added the 'final constraints' before, we remove them
-                if let finalConstraints = lastViewConstraint {
-                    scrollView.removeConstraints(finalConstraints as [AnyObject])
+                if let finalConstraints = lastViewConstraints {
+                    scrollView.removeConstraints(finalConstraints)
                 }
                 
-                lastViewConstraint = NSLayoutConstraint.constraintsWithVisualFormat("H:[view]|", options: nil, metrics: nil, views: viewsDictionary)
-                scrollView.addConstraints(lastViewConstraint! as [AnyObject])
+                lastViewConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:[view]|", options: [], metrics: nil, views: viewsDictionary)
+                scrollView.addConstraints(lastViewConstraints!)
             }
         }
         
@@ -287,7 +287,7 @@ extension UIView {
         Removes only constraints pertaining to the width or height of this view.
      */
     func removeHeightWidthConstraints() {
-        for constraint in constraints() as! [NSLayoutConstraint] {
+        for constraint in constraints {
             if constraint.firstAttribute == .Width || constraint.secondAttribute == .Width ||
                 constraint.firstAttribute == .Height || constraint.secondAttribute == .Height {
                     removeConstraint(constraint)
