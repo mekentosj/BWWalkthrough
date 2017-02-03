@@ -37,11 +37,11 @@ class BWWalkthroughViewController: UIViewController {
     /// Title for 'close' button when the end of the walkthrough has been reached.
     var finalCloseButtonTitle: String?
     /// The close button title pulled from the storyboard.
-    private var standardCloseButtonTitle: String?
+    fileprivate var standardCloseButtonTitle: String?
     /// The view controllers for the views in our scroll view.
-    private var controllers = [UIViewController]()
+    fileprivate var controllers = [UIViewController]()
     /// The last horizontal layout constraint for the last view in the scroll view to the right edge of the scroll view
-    private var lastViewConstraints: [NSLayoutConstraint]?
+    fileprivate var lastViewConstraints: [NSLayoutConstraint]?
     
     //  MARK: Properties - Subviews
     
@@ -60,15 +60,15 @@ class BWWalkthroughViewController: UIViewController {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.showsVerticalScrollIndicator = false
-        scrollView.pagingEnabled = true
-        scrollView.keyboardDismissMode = .OnDrag
+        scrollView.isPagingEnabled = true
+        scrollView.keyboardDismissMode = .onDrag
         
         return scrollView
     }()
     
     //	MARK: Actions
     
-    @IBAction private func nextPage() {
+    @IBAction fileprivate func nextPage() {
         
         if (currentPage + 1) < controllers.count {
             
@@ -80,7 +80,7 @@ class BWWalkthroughViewController: UIViewController {
         }
     }
     
-    @IBAction private func prevPage() {
+    @IBAction fileprivate func prevPage() {
         
         if currentPage > 0 {
             
@@ -92,7 +92,7 @@ class BWWalkthroughViewController: UIViewController {
         }
     }
     
-    @IBAction private func close(sender: AnyObject){
+    @IBAction fileprivate func close(_ sender: AnyObject){
         delegate?.walkthroughCloseButtonPressed?()
     }
     
@@ -102,7 +102,7 @@ class BWWalkthroughViewController: UIViewController {
         Update the UI to reflect the current walkthrough situation.
     **/
     
-    private func updateUI(){
+    fileprivate func updateUI(){
         
         //  get the current page
         
@@ -120,11 +120,11 @@ class BWWalkthroughViewController: UIViewController {
     /**
         Updates navigation and control buttons (next / previous / close)
     */
-    private func updateButtons() {
+    fileprivate func updateButtons() {
         
         //  hides next button if we are on the last page, and previous button if we are ont he first page
-        nextButton?.hidden = currentPage == controllers.count - 1
-        prevButton?.hidden = currentPage == 0
+        nextButton?.isHidden = currentPage == controllers.count - 1
+        prevButton?.isHidden = currentPage == 0
         
         //  if we have a title for the close button to be shown on the last page, we check and act appropriately
         if let finalTitle = finalCloseButtonTitle {
@@ -136,12 +136,12 @@ class BWWalkthroughViewController: UIViewController {
             
             //  set title for close button based on whether we are on the last page or not
             let title = currentPage == controllers.count - 1 ? finalTitle : standardCloseButtonTitle
-            closeButton?.setTitle(title, forState: .Normal)
+            closeButton?.setTitle(title, for: UIControlState())
         }
     }
     
     //	MARK: View Lifecycle
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
         //  this needs to happen in viewDidAppear because otherwise the constraints will be incorrect
@@ -152,14 +152,14 @@ class BWWalkthroughViewController: UIViewController {
         super.viewDidLoad()
         
         //  inset the scroll view as the first view in the hierarchy
-        view.insertSubview(scrollView, atIndex: 0)
+        view.insertSubview(scrollView, at: 0)
         
         //  set up the scroll view to cover the entirety of the main view
-        view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|[scrollView]|", options: [], metrics: nil, views: ["scrollView": scrollView]))
-        view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|[scrollView]|", options: [], metrics: nil, views: ["scrollView": scrollView]))
+        view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[scrollView]|", options: [], metrics: nil, views: ["scrollView": scrollView]))
+        view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[scrollView]|", options: [], metrics: nil, views: ["scrollView": scrollView]))
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
         
         scrollView.delegate = self
@@ -176,7 +176,7 @@ class BWWalkthroughViewController: UIViewController {
     /**
         Updates the scroll view with the current view controllers to be displayed.
      */
-    private func updateViewControllers() {
+    fileprivate func updateViewControllers() {
         
         if scrollView.bounds == CGRect.zero {
             return
@@ -191,35 +191,35 @@ class BWWalkthroughViewController: UIViewController {
             let viewController = controllers[viewControllerIndex]
             let view = viewController.view
             
-            view.translatesAutoresizingMaskIntoConstraints = false
-            view.removeHeightWidthConstraints()
-            scrollView.addSubview(view)
+            view?.translatesAutoresizingMaskIntoConstraints = false
+            view?.removeHeightWidthConstraints()
+            scrollView.addSubview(view!)
             
             let viewsDictionary = ["view": view]
             
             //  define height and width
-            view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[view(h)]", options: [], metrics: metrics, views: viewsDictionary))
-            view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:[view(w)]", options: [], metrics: metrics, views: viewsDictionary))
+            view?.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:[view(h)]", options: [], metrics: metrics, views: viewsDictionary))
+            view?.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:[view(w)]", options: [], metrics: metrics, views: viewsDictionary))
             
             //  define scroll view content size vertically
-            scrollView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|[view]|", options: [], metrics: nil, views: viewsDictionary))
+            scrollView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[view]|", options: [], metrics: nil, views: viewsDictionary))
             
             //  position first view at beginning of scroll view
             if viewControllerIndex == 0 {
-                scrollView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|[view]", options: [], metrics: nil, views: viewsDictionary))
+                scrollView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[view]", options: [], metrics: nil, views: viewsDictionary))
             } else {
                 //  position subsequent views after the previous view
                 let previousViewController = controllers[viewControllerIndex - 1]
                 let previousView = previousViewController.view
                 
-                scrollView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:[previousView][view]", options: [], metrics: nil, views: ["previousView": previousView, "view": view]))
+                scrollView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:[previousView][view]", options: [], metrics: nil, views: ["previousView": previousView, "view": view]))
                 
                 //  if we added the 'final constraints' before, we remove them
                 if let finalConstraints = lastViewConstraints {
                     scrollView.removeConstraints(finalConstraints)
                 }
                 
-                lastViewConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:[view]|", options: [], metrics: nil, views: viewsDictionary)
+                lastViewConstraints = NSLayoutConstraint.constraints(withVisualFormat: "H:[view]|", options: [], metrics: nil, views: viewsDictionary)
                 scrollView.addConstraints(lastViewConstraints!)
             }
         }
@@ -232,7 +232,7 @@ class BWWalkthroughViewController: UIViewController {
     
         :param: viewController      A view controller which manages a view to be added as a page to the walkthrough.
     */
-    func addViewController(viewController: UIViewController) {
+    func addViewController(_ viewController: UIViewController) {
         
         controllers.append(viewController)
         
@@ -243,9 +243,9 @@ class BWWalkthroughViewController: UIViewController {
 //  MARK: UIScrollViewDelegate Functions
 extension BWWalkthroughViewController: UIScrollViewDelegate {
     
-    func scrollViewDidScroll(scrollView: UIScrollView) {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
         
-        for var i=0; i < controllers.count; i++ {
+        for i in 0 ..< controllers.count {
             
             if let vc = controllers[i] as? BWWalkthroughPage{
                 
@@ -264,18 +264,18 @@ extension BWWalkthroughViewController: UIScrollViewDelegate {
         }
     }
     
-    func scrollViewDidEndDecelerating(scrollView: UIScrollView) {
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         updateUI()
     }
     
-    func scrollViewDidEndScrollingAnimation(scrollView: UIScrollView) {
+    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
         updateUI()
     }
 }
 
 //	MARK: WalkthroughPageDelegate Functions
 extension BWWalkthroughViewController: WalkthroughPageDelegate {
-    func walkthroughPageRequestsDismissal(walkthroughPage: BWWalkthroughPage) {
+    func walkthroughPageRequestsDismissal(_ walkthroughPage: BWWalkthroughPage) {
         close(self)
     }
 }
@@ -288,8 +288,8 @@ extension UIView {
      */
     func removeHeightWidthConstraints() {
         for constraint in constraints {
-            if constraint.firstAttribute == .Width || constraint.secondAttribute == .Width ||
-                constraint.firstAttribute == .Height || constraint.secondAttribute == .Height {
+            if constraint.firstAttribute == .width || constraint.secondAttribute == .width ||
+                constraint.firstAttribute == .height || constraint.secondAttribute == .height {
                     removeConstraint(constraint)
             }
         }

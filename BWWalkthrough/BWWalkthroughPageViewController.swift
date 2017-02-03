@@ -31,13 +31,13 @@ import UIKit
 /// The type of animation the walkthrough page is performing.
 enum WalkthroughAnimationType {
     /// A standard, linear animation
-    case Linear
+    case linear
     /// A curved animation
-    case Curve
+    case curve
     /// A zoom animation
-    case Zoom
+    case zoom
     /// An in out animation.
-    case InOut
+    case inOut
     
     /**
         Allows for initialisation of a `WalkthroughAnimationType` from a `String`. Supported strings (case insensitive):
@@ -51,22 +51,22 @@ enum WalkthroughAnimationType {
         
         :returns:           A `WalkthroughAnimationType` matching the given string, or just a `Linear` animation if the string is unsupported.
      */
-    static func fromString(string: String) -> WalkthroughAnimationType {
-        switch(string.lowercaseString) {
+    static func fromString(_ string: String) -> WalkthroughAnimationType {
+        switch(string.lowercased()) {
         case "linear":
-            return .Linear
+            return .linear
             
         case "curve":
-            return .Curve
+            return .curve
             
         case "zoom":
-            return .Zoom
+            return .zoom
             
         case "inout":
-            return .InOut
+            return .inOut
             
         default:
-            return .Linear
+            return .linear
         }
     }
 }
@@ -100,7 +100,7 @@ class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
     /// The delegate which allows for comunication back up to the walkthrough view controller.
     var delegate: WalkthroughPageDelegate?
     /// Speeds of the animation applied to our subviews, mapped to each subview.
-    private var subviewSpeeds = [CGPoint]()
+    fileprivate var subviewSpeeds = [CGPoint]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -117,23 +117,23 @@ class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
     
     // MARK: BWWalkthroughPage Functions
     
-    func walkthroughDidScroll(position: CGFloat, offset: CGFloat) {
+    func walkthroughDidScroll(_ position: CGFloat, offset: CGFloat) {
         
         for index in 0..<subviewSpeeds.count {
             
             //  perform transition / scale / rotate animations
             switch WalkthroughAnimationType.fromString(animationType) {
                 
-            case WalkthroughAnimationType.Linear:
+            case WalkthroughAnimationType.linear:
                 animationLinear(index, offset)
                 
-            case WalkthroughAnimationType.Zoom:
+            case WalkthroughAnimationType.zoom:
                 animationZoom(index, offset)
                 
-            case WalkthroughAnimationType.Curve:
+            case WalkthroughAnimationType.curve:
                 animationCurve(index, offset)
                 
-            case WalkthroughAnimationType.InOut:
+            case WalkthroughAnimationType.inOut:
                 animationInOut(index, offset)
             }
             
@@ -153,8 +153,9 @@ class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
         :param: index       The index of the view to animate.
         :param  offset      The current offset of the walkthrough.
      */
-    private func animationAlpha(index: Int, var _ offset: CGFloat) {
-        for subview in view.subviews as! [UIView] {
+    private func animationAlpha(_ index: Int, _ offset: CGFloat) {
+        var offset = offset
+        for subview in view.subviews {
             
             //  if the offset is more than 1, we knock it down
             if (offset > 1.0) {
@@ -165,33 +166,33 @@ class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
         }
     }
     
-    private func animationCurve(index:Int, _ offset:CGFloat) {
+    fileprivate func animationCurve(_ index:Int, _ offset:CGFloat) {
         var transform = CATransform3DIdentity
-        var x:CGFloat = (1.0 - offset) * 10
+        let x:CGFloat = (1.0 - offset) * 10
         transform = CATransform3DTranslate(transform, (pow(x,3) - (x * 25)) * subviewSpeeds[index].x, (pow(x,3) - (x * 20)) * subviewSpeeds[index].y, 0 )
         view.subviews[index].layer.transform = transform
     }
     
-    private func animationZoom(index:Int, _ offset:CGFloat){
+    fileprivate func animationZoom(_ index:Int, _ offset:CGFloat){
         var transform = CATransform3DIdentity
         
         var tmpOffset = offset
         if(tmpOffset > 1.0){
             tmpOffset = 1.0 + (1.0 - tmpOffset)
         }
-        var scale:CGFloat = (1.0 - tmpOffset)
+        let scale:CGFloat = (1.0 - tmpOffset)
         transform = CATransform3DScale(transform, 1 - scale , 1 - scale, 1.0)
         view.subviews[index].layer.transform = transform
     }
     
-    private func animationLinear(index:Int, _ offset:CGFloat){
+    fileprivate func animationLinear(_ index:Int, _ offset:CGFloat){
         var transform = CATransform3DIdentity
-        var mx:CGFloat = (1.0 - offset) * 100
+        let mx:CGFloat = (1.0 - offset) * 100
         transform = CATransform3DTranslate(transform, mx * subviewSpeeds[index].x, mx * subviewSpeeds[index].y, 0 )
         view.subviews[index].layer.transform = transform
     }
     
-    private func animationInOut(index:Int, _ offset:CGFloat){
+    fileprivate func animationInOut(_ index:Int, _ offset:CGFloat){
         var transform = CATransform3DIdentity
         var x:CGFloat = (1.0 - offset) * 20
         

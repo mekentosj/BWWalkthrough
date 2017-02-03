@@ -23,7 +23,7 @@ import UIKit
     /** Called when the previous button is pressed.  */
     @objc optional func walkthroughPrevButtonPressed()
     /** Called when the walkthrough page changes for whatever reason.  */
-    @objc optional func walkthroughPageDidChange(pageNumber:Int)
+    @objc optional func walkthroughPageDidChange(_ pageNumber:Int)
     
 }
 
@@ -40,7 +40,7 @@ import UIKit
         
         :param: walkthroughPage     The page requesting that the walkthrough be dismissed.
     */
-    func walkthroughPageRequestsDismissal(walkthroughPage: BWWalkthroughPage)
+    func walkthroughPageRequestsDismissal(_ walkthroughPage: BWWalkthroughPage)
 }
 
 //  MARK: BWWalkthroughPage Protocol
@@ -59,7 +59,7 @@ import UIKit
         For example, if a page in centred, and you slide to the next page, the offset will go from 1.0 to 2.0, and the page we're sliding to has it's offset change from 0.0 to 1.0.
         Therefore, if you slide to the previous page, the current page's offset changes from 1.0 to 0.0, and the previous page's offset decreases from 2.0 to 1.0.
      */
-    @objc func walkthroughDidScroll(position:CGFloat, offset:CGFloat)   // Called when the main Scrollview...scrolls
+    @objc func walkthroughDidScroll(_ position:CGFloat, offset:CGFloat)   // Called when the main Scrollview...scrolls
     
     var delegate: WalkthroughPageDelegate? { get set }
 }
