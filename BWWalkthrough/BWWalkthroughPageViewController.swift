@@ -153,7 +153,7 @@ class BWWalkthroughPageViewController: UIViewController, BWWalkthroughPage {
         :param: index       The index of the view to animate.
         :param  offset      The current offset of the walkthrough.
      */
-    private func animationAlpha(_ index: Int, _ offset: CGFloat) {
+    fileprivate func animationAlpha(_ index: Int, _ offset: CGFloat) {
         var offset = offset
         for subview in view.subviews {
             
